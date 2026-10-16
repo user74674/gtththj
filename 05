@@ -1,281 +1,663 @@
-18. AdSense operations and policy readiness
+# PROMPT 05 — INTELLIGENCE PRODUCTION READINESS, ADVANCED SEO, NEWS INDEXING, ADSENSE COMPLIANCE, SECURITY & VPS DEPLOYMENT
 
-AdSense is a primary monetization objective.
+## 1. PRIMARY OBJECTIVE
 
-Add an operational configuration view for the existing ad integration.
+Perform a comprehensive production-readiness audit of the existing Intelligence web application, then implement, repair, and verify the required improvements.
 
-Show:
+This is not a request to create a new mockup, a decorative SEO dashboard, or documentation without implementation.
 
-Whether a publisher ID is configured.
+The objective is to prepare the EXISTING application for a real production deployment on a VPS, with particular emphasis on:
 
-Whether ad components are enabled.
+1. Advanced technical SEO and Google Search visibility.
+2. News publishing, indexing, archival behavior, and structured data.
+3. Crawlability, canonical URLs, XML sitemaps, robots.txt, and indexing controls.
+4. Google AdSense policy readiness and advertising-safe page architecture.
+5. Application security, backend reliability, and production performance.
+6. Mobile usability, accessibility, and Core Web Vitals.
+7. Deployment reliability, environment configuration, monitoring, backups, and recovery.
+8. Automated testing and a truthful final readiness report.
 
-Which placements are active.
+The website is called Intelligence. Preserve its established identity, visual design system, working features, and existing architecture wherever possible.
 
-Which placements are development-only.
+Do not blindly replace working code, rebuild the project from scratch, or install unnecessary dependencies.
 
-Whether required policy and privacy pages exist.
+## 2. START WITH A REAL REPOSITORY AUDIT
 
-Whether an ads.txt file is present where applicable.
+Before making changes, inspect the actual repository and identify:
 
-Any missing configuration that can be detected safely.
+- Framework, runtime, package manager, and build configuration.
+- Existing routes, layouts, components, and page rendering strategy.
+- Database schema, migrations, ORM, and persistence layer.
+- News ingestion and publishing workflows.
+- Existing market data and arbitrage integrations.
+- Existing authentication, authorization, and admin functionality.
+- Current SEO metadata and structured-data implementation.
+- Existing robots.txt, sitemap files, redirects, and canonical URL behavior.
+- AdSense integration and public policy pages.
+- Environment variables, secrets handling, API integrations, and background jobs.
+- Existing tests, logging, error handling, and deployment configuration.
 
-Do not claim that the website is approved by Google or that ads are serving unless this has actually been verified.
+Use the actual repository structure and established route names. The routes listed in earlier project specifications, such as /world, /markets, /arbitrage, and /admin, are examples; discover the real routes rather than assuming they all exist.
 
-Do not claim that an ads.txt entry is valid simply because a file exists.
+Create an internal implementation checklist and prioritize problems by severity.
 
-The publisher ID must come from real owner configuration.
+Do not claim that a feature exists simply because a component or configuration file exists. Verify that it works.
 
-Ensure the Control Center itself does not become a public ad-filled page. Administrative routes should be appropriately protected and excluded from indexing.
+## 3. ADVANCED TECHNICAL SEO ARCHITECTURE
 
-Review whether technical metadata, canonical URLs, robots directives, sitemap generation, and public policy pages remain consistent with the current application.
+Implement a coherent technical SEO system across all eligible public pages.
 
-Do not place AdSense ads on administrative pages, error pages, or pages with little substantive public content merely to maximize placements.
+### 3.1 Metadata
 
-19. Performance and resource protection
+Ensure each indexable page can generate accurate, page-specific:
 
-The system must operate reliably on the target VPS.
+- HTML title.
+- Meta description.
+- Canonical URL.
+- Robots directives where appropriate.
+- Open Graph title, description, URL, image, and type.
+- Social-sharing metadata, including Twitter/X card metadata where useful.
+- Correct language declaration and document metadata.
+- Appropriate HTTP status codes.
 
-Use bounded resource consumption across all background work.
+Metadata must be generated from the actual page content and database records.
 
-Requirements:
+Avoid duplicate titles, generic descriptions across every route, malformed URLs, missing canonical URLs, and accidental canonicalization of unrelated pages to the homepage.
 
-Limit concurrent ingestion jobs.
+Use absolute canonical URLs based on a validated production site URL stored in configuration. Do not hardcode localhost, development domains, preview URLs, or an assumed production domain.
 
-Prevent duplicate scheduled work.
+Never place API keys, private information, session tokens, or unpublished sensitive data in metadata.
 
-Limit active market-data subscriptions.
+### 3.2 Rendering and crawlability
 
-Use provider-aware polling.
+Review whether public news and other important content can be discovered and rendered reliably by search engines.
 
-Reuse existing connections where appropriate.
+Prefer server-rendered or statically generated HTML for stable public content when supported by the existing framework.
 
-Avoid unbounded queues.
+Ensure that important content is not available only after a user clicks a button, executes a client-only search, opens a modal, or waits for a browser-side API request.
 
-Limit response sizes.
+The initial HTML should expose meaningful page titles, article headings, publication information, canonical links, and the primary content wherever the rendering architecture permits.
 
-Paginate logs and execution history.
+Use sensible caching and revalidation for public content. Avoid turning every request into an expensive uncached database operation.
 
-Avoid rendering huge operational tables at once.
+Do not block Googlebot or other legitimate search crawlers from public content through overly broad robots rules, authentication middleware, or accidental firewall restrictions.
 
-Apply retention and log rotation.
+Verify that redirects, trailing-slash behavior, URL casing, query parameters, and pagination produce consistent URL behavior.
 
-Use database indexes for frequent queries.
+Use permanent redirects only when a URL has genuinely moved or been consolidated. Do not redirect deleted or unrelated articles indiscriminately to the homepage.
 
-Use caching where beneficial.
+### 3.3 Indexability controls
 
-Shut down cleanly on termination signals.
+Build a consistent indexing policy for:
 
-Avoid synchronous expensive operations in request handlers.
+- Homepage and major public landing pages.
+- Published news articles.
+- Public country and geopolitical topic pages.
+- Public market and financial analysis pages.
+- Category and tag archives.
+- Pagination and search results.
+- Filtered market views and query-string variants.
+- Login, admin, account, diagnostic, and internal utility pages.
+- Draft, unpublished, deleted, and restricted content.
 
-Ensure optional AI workloads cannot starve essential ingestion or user-facing API requests.
+Private and administrative pages must not be indexed.
 
-If resource monitoring is unavailable, state that limitation rather than displaying invented CPU or memory values.
+Use appropriate authentication and access control for genuinely private pages. A robots.txt rule is not a security boundary.
 
-Do not create a system that assumes every exchange, news source, AI provider, and external alerting integration is active simultaneously.
+Apply noindex where appropriate to thin, duplicate, internal-search, or low-value pages. Do not blanket-noindex all category pages or all filtered pages without evaluating whether they offer useful, distinct content.
 
-20. Testing requirements
+Prevent internal search results, session parameters, tracking parameters, and arbitrary filter combinations from creating uncontrolled indexable URL variants.
 
-Add tests appropriate to the existing stack.
+Ensure that a page intended for indexing is not simultaneously blocked in robots.txt in a way that prevents Google from discovering its noindex directive.
 
-At minimum, validate:
+## 4. NEWS SEO AND ARTICLE LIFECYCLE
 
-Authentication and authorization
+News is a central component of Intelligence. Implement a durable and consistent article lifecycle instead of treating news as temporary cards that disappear without a trace.
 
-Anonymous users cannot access administrative routes.
+### 4.1 Stable article URLs
 
-Anonymous users cannot call administrative APIs.
+Every published article must have a stable, unique, human-readable URL.
 
-Operators cannot perform actions beyond their permissions.
+Use a database-backed immutable identifier or equivalent reliable internal identity. Slugs can change, but a change must be handled with a carefully managed redirect when appropriate.
 
-Sensitive settings are never returned in full.
+Do not reuse the URL of a deleted article for an unrelated story.
 
-Invalid or expired sessions are handled safely.
+Support clear article states, such as:
 
-Source and provider management
+- Draft.
+- Scheduled, if scheduling already exists or can be safely implemented.
+- Published.
+- Updated.
+- Retracted or corrected.
+- Archived, if relevant to the existing product.
+- Deleted or removed.
 
-Invalid configuration is rejected.
+Only content that is actually published and eligible for public viewing should appear in public article feeds, public sitemaps, or indexable article routes.
 
-Disabled sources do not run.
+Respect publication permissions and access controls in both the frontend and backend.
 
-Connection-test failures are recorded.
+### 4.2 Article metadata and visible content
 
-Rate limits are handled.
+For every eligible article, provide accurate and consistent:
 
-Credentials are not logged.
+- Headline.
+- Author or publishing organization where known.
+- Original publication date and time.
+- Last meaningful modification date and time.
+- Featured image and valid image URL when available.
+- Actual source attribution.
+- Article category or topic.
+- Article language where supported.
+- Canonical URL.
+- Breadcrumb navigation where useful.
 
-Unsafe source URLs are rejected.
+Store timestamps consistently, preferably in UTC, and render them in the appropriate display timezone.
 
-Missing credentials do not create false connected states.
+Do not reset the original publication date when an article receives a routine edit or automated refresh.
 
-Scheduler and jobs
+Only update the modification timestamp when a meaningful change occurs.
 
-Jobs do not overlap when overlap is prohibited.
+Never invent authors, publication dates, source names, article images, quotes, or original reporting.
 
-Failed jobs receive bounded retries.
+For aggregated or republished content, preserve the actual source attribution and respect applicable copyright and licensing restrictions. Do not automatically copy full copyrighted articles from third-party sources.
 
-Permanent failures do not retry forever.
+### 4.3 Google News and Article structured data
 
-Manual execution requires authorization.
+Implement appropriate JSON-LD structured data for eligible news article pages using `NewsArticle` or another more appropriate supported Article subtype when justified.
 
-Shutdown does not leave uncontrolled background work.
+Include only properties that are actually known and accurate, such as:
 
-Execution history is persisted correctly.
+- headline.
+- image.
+- datePublished.
+- dateModified.
+- author.
+- publisher.
+- mainEntityOfPage.
+- articleSection, when applicable.
+- inLanguage, when known.
 
-Data quality and persistence
+Use valid absolute URLs and ISO 8601 timestamps.
 
-Invalid records are flagged appropriately.
+The structured data must match visible page content. Never generate fake ratings, fake authors, fabricated review markup, misleading publication dates, or unsupported claims.
 
-Duplicate processing does not create duplicate records.
+Use a consistent publisher identity and logo only when the actual organization and assets are configured.
 
-Retention jobs obey the configured policy.
+Add relevant breadcrumb structured data where appropriate.
 
-Migrations can be applied on a test database.
+Validate JSON-LD serialization and ensure that user-controlled text cannot inject scripts or corrupt the generated markup.
 
-Backup verification does not modify production data.
+Do not promise rich results or Google News inclusion. Structured data makes pages eligible for certain search features when all applicable requirements are met; it does not guarantee their appearance.
 
-Deployment and operational behavior
+### 4.4 Article archive and removal policy
 
-Health endpoints report the correct state.
+Do not automatically delete published articles just because they are older than 72 hours or have disappeared from a rolling live-news feed.
 
-Required configuration is validated.
+Keep these concepts separate:
 
-Optional integrations can remain disabled.
+1. Live-news window: which articles are emphasized in the current rolling timeline.
+2. Article archive: previously published articles that remain available.
+3. Search indexing eligibility: whether a particular article should remain indexable.
+4. Retention policy: how long the underlying data is retained.
 
-Public responses do not expose internal stack traces.
+The 72-hour live timeline and the permanent or configurable article archive must work independently.
 
-Logs do not contain secrets.
+For previously published articles:
 
-The application starts without an AI key when AI is optional.
+- Keep a stable URL if the article remains useful and legally publishable.
+- Keep it in the sitemap while it remains eligible for indexing and accessible.
+- If an article is corrected, preserve a transparent correction history where appropriate.
+- If a story is retracted, show an appropriate notice and apply a deliberate indexing policy.
+- If an article is permanently removed, return a real 404 or 410 where appropriate and remove it from future sitemap output.
+- If an article has moved to a genuine replacement, use a relevant redirect.
+- Never leave a sitemap URL pointing to a deleted, private, redirected, or inaccessible article.
 
-Run the actual build, type checks, lint checks, tests, and migration checks available in the repository.
+Preserve the distinction between a live-news timeline, an archive, and an actual deletion.
 
-Record the results. Do not claim success without running the commands.
+## 5. XML SITEMAPS — IMPLEMENT A REAL SITEMAP SYSTEM
 
-21. Implementation sequence
+Implement valid, automatically generated XML sitemaps that reflect the current state of the database.
 
-Work in the following order.
+Do not merely create a static sitemap file containing sample URLs.
 
-Stage 1 — Repository audit
+### 5.1 Sitemap architecture
 
-Document the actual stack, current features, integrations, and gaps.
+Create a sitemap index if the application has enough URLs or multiple logical content groups to benefit from it.
 
-Stage 2 — Operational data model
+Possible sitemap groups include:
 
-Create only the required database models, migrations, and service interfaces.
+- Core public pages.
+- Published news articles.
+- Public country or geopolitical topic pages.
+- Public market research and instrument pages, if those pages provide substantial original value.
+- Other genuinely useful public content types.
 
-Stage 3 — Protected Control Center
+Use separate sitemap files where useful and keep each sitemap within applicable protocol limits.
 
-Build authenticated routes, authorization, overview, and module navigation.
+Generate URLs using the configured production origin and normalized canonical paths.
 
-Stage 4 — Connector management
+Sitemap entries must contain absolute canonical URLs that return successful responses and are eligible for indexing.
 
-Integrate real source and provider health, configuration validation, safe testing, and diagnostics.
+Exclude:
 
-Stage 5 — Background jobs
+- Admin and login pages.
+- Private API endpoints.
+- Draft and unpublished articles.
+- Internal search pages.
+- Duplicate canonical URLs.
+- Redirecting URLs.
+- Deleted or inaccessible content.
+- Arbitrary tracking or filter parameter combinations.
 
-Implement or repair scheduling, execution tracking, bounded retries, and manual operations.
+Do not include every possible market filter or instrument combination just to inflate the sitemap.
 
-Stage 6 — Data quality and observability
+### 5.2 lastmod policy
 
-Implement health checks, operational logs, quality findings, alerts, and audit history.
+Include `lastmod` only when the application can provide a trustworthy modification timestamp.
 
-Stage 7 — Backup and deployment
+Use the actual content modification time, not the time the sitemap was generated.
 
-Prepare environment templates, startup configuration, process supervision, reverse proxy guidance, backup and restore instructions.
+Do not update every article's `lastmod` on every scheduled sitemap refresh.
 
-Stage 8 — Security review
+Do not rely on `priority` or `changefreq` as if they guarantee higher rankings; avoid unnecessary sitemap noise.
 
-Review authorization, secret handling, SSRF exposure, unsafe content, logs, public endpoints, and administrative operations.
+### 5.3 News sitemap
 
-Stage 9 — Validation
+Evaluate whether a dedicated Google News sitemap is appropriate for this product and its actual publishing model.
 
-Run tests and production build checks. Fix implementation-caused failures and document remaining blockers.
+If implemented, follow Google's current News sitemap requirements and include only qualifying recent articles, with accurate publication names, language, publication timestamps, and article URLs.
 
-Do not implement every stage as a mockup and then declare the system complete. Prioritize the smallest complete operational path and expand it incrementally.
+A Google News sitemap should generally cover only eligible news articles published within the applicable recent-content window, commonly the previous two days. Do not confuse this with the full article archive sitemap.
 
-22. Acceptance criteria
+Older published articles may remain in the normal sitemap when they are still indexable, even after they leave the news-specific sitemap.
+
+Do not claim that creating a News sitemap qualifies Intelligence as a Google News publisher or guarantees inclusion in Google News.
+
+If Intelligence does not meet the relevant publishing requirements or the feature would be inappropriate, document the reason and implement the appropriate standard sitemap instead.
+
+### 5.4 Automatic sitemap updates
+
+Whenever an article is published, materially updated, corrected, retracted, or removed, ensure sitemap output and cache invalidation reflect the new state promptly.
+
+Use reliable database-backed queries, caching, and revalidation. Avoid expensive full-database scans on every request.
+
+If the application has a background job system, integrate sitemap refreshes with it where useful. Do not introduce a heavy job infrastructure unnecessarily.
+
+Verify that sitemap endpoints return the correct XML content type, valid XML, and appropriate status codes.
+
+## 6. ROBOTS.TXT, SITEMAP DISCOVERY, AND SEARCH ENGINE FILES
+
+Implement and verify a production-safe robots.txt at the site root.
+
+It must:
+
+- Allow crawling of intended public content.
+- Avoid accidentally blocking essential public pages, CSS, JavaScript, or image resources.
+- Avoid disclosing sensitive information through unnecessary paths or comments.
+- Reference the correct absolute production sitemap index URL.
+- Avoid exposing credentials or private infrastructure details.
+
+Do not rely on robots.txt to protect admin routes or API endpoints.
+
+Review whether other machine-readable files are appropriate, but do not create files merely for appearance.
+
+For example, implement a web app manifest only if it supports the actual application experience. Use ads.txt only with the real publisher relationship and publisher ID.
+
+Ensure that robots.txt, sitemap endpoints, redirects, canonical metadata, and HTTP response headers agree with one another.
+
+## 7. GOOGLE SEARCH CONSOLE READINESS
+
+Prepare the website for Google Search Console without pretending that verification or indexing has already happened.
+
+- Ensure that domain configuration supports Search Console verification.
+- Support an appropriate verification method where practical, such as a securely configured verification token or DNS verification handled by the site owner.
+- Ensure that the sitemap index can be submitted manually.
+- Ensure that public article pages can be inspected and rendered without login.
+- Provide a short deployment checklist for verifying the domain, submitting the sitemap, and monitoring indexing reports.
+- Identify potential soft-404s, duplicate canonicals, redirect chains, blocked pages, and server errors through automated tests where possible.
+
+Do not fabricate Search Console results, indexing counts, crawl statistics, or ranking positions.
+
+Do not create fake verification tokens or hardcode credentials.
+
+## 8. NEWS CONTENT QUALITY AND DISCOVERABILITY
+
+Improve news-page usefulness without inventing editorial content.
+
+Each indexable article page should provide a meaningful title, readable content or a legitimate attributed summary, publication details, source attribution, related-topic links when relevant, and a clear route back to the relevant archive or topic.
+
+Avoid producing large numbers of thin pages that differ only by a country name, ticker, or search parameter.
+
+If an article is only a headline and external link, evaluate whether the page offers sufficient original value to warrant indexing. Do not index low-value pages automatically.
+
+Keep source identity and article provenance clear.
+
+Where AI-generated summaries are used, ensure they are grounded in the actual source material, label them appropriately where needed, and prevent fabricated facts from being published silently.
+
+Do not mass-generate repetitive SEO text solely to manipulate search rankings.
+
+Provide a documented editorial and source methodology page that explains how Intelligence obtains, attributes, updates, and corrects information, using only statements that are true of the implemented system.
+
+## 9. GOOGLE ADSENSE READINESS AND POLICY SAFETY
+
+Review the entire application for AdSense readiness.
+
+Do not claim approval, guaranteed acceptance, or guaranteed revenue.
+
+### 9.1 Required public pages
+
+Verify that appropriate public pages exist, are accessible, and contain real information:
+
+- About.
+- Contact.
+- Privacy Policy.
+- Cookie and consent information where applicable.
+- Terms of Use.
+- Financial and market-data disclaimers where relevant.
+- Editorial policy and source methodology for the news product.
+
+Use genuine business/contact details supplied through configuration or existing verified content. Never fabricate a company address, legal entity, phone number, or business identity.
+
+The privacy policy must accurately reflect actual data collection, cookies, analytics, advertising integrations, third-party services, and retention practices.
+
+If a feature is not implemented, do not claim it is implemented in the policy.
+
+### 9.2 Ad placement
+
+Audit every existing advertising location.
+
+- Keep advertisements clearly distinguishable from editorial and navigation content.
+- Never style ads to impersonate headlines, download buttons, menu items, or functional application controls.
+- Prevent accidental clicks caused by overlays, shifting layouts, sticky elements, or touch targets.
+- Ensure ad containers do not obscure article content or critical controls.
+- Avoid ad placements on empty, broken, thin, private, or restricted pages where inappropriate.
+- Do not serve production ad code on the admin panel, login pages, internal diagnostic screens, or error pages.
+- Preserve stable space for ads where practical to reduce layout shifts.
+- Make sure ad blockers or blocked ad requests do not break the application.
+- Do not create fake advertisements or simulated ad impressions in production.
+
+Support responsive ad placements and configurable ad slots, but use real publisher-provided configuration.
+
+Do not invent an AdSense publisher ID or client identifier.
+
+If ad configuration is absent, display a neutral non-production diagnostic in development and avoid fabricated production ads.
+
+Do not build custom deceptive interstitials or force accidental clicks. Features such as anchor and vignette ads should be controlled through supported AdSense settings rather than imitated with custom overlays.
+
+### 9.3 Consent and privacy
+
+Determine which consent mechanisms are necessary based on the target audience, jurisdiction, and actual advertising configuration.
+
+Where Google requires a certified Consent Management Platform for applicable traffic or regions, document and implement an appropriate supported integration.
+
+Do not create a cosmetic cookie banner that claims to manage consent while advertising or tracking scripts ignore the user's choice.
+
+Respect consent signals and applicable privacy choices in the actual integration.
+
+## 10. SEO PERFORMANCE AND CORE WEB VITALS
+
+Optimize the existing application without sacrificing its design or working features.
+
+Evaluate:
+
+- Largest Contentful Paint (LCP).
+- Interaction to Next Paint (INP).
+- Cumulative Layout Shift (CLS).
+- Initial JavaScript payload.
+- Image size and loading behavior.
+- Font loading.
+- Third-party scripts.
+- Server response time.
+- Database query efficiency.
+- Caching and revalidation.
+- Mobile layout stability.
+
+Use code splitting, lazy loading, image optimization, sensible cache policies, and efficient rendering where appropriate.
+
+For the 3D globe and other WebGL features, avoid blocking the entire page from rendering. Provide a useful accessible fallback if WebGL is unavailable or fails.
+
+Do not initialize unnecessary animations or large visualizations on every route.
+
+Avoid excessive polling of news, market providers, and external APIs. Reuse server-side collection jobs and cached data where possible.
+
+Set realistic, measurable performance targets and record the test conditions. Aim for good Core Web Vitals, using Google's established “good” thresholds as the target: LCP at or below 2.5 seconds, INP at or below 200 milliseconds, and CLS at or below 0.1 at the 75th percentile when real-user data is available.
+
+Laboratory test results are useful but are not equivalent to field data. Clearly distinguish measured results, estimates, and unavailable measurements.
+
+Do not report Lighthouse scores or Core Web Vitals as passing unless they were actually measured.
+
+## 11. SECURITY REVIEW
+
+Perform a practical production security review of the existing codebase.
+
+Inspect and fix, where applicable:
+
+- Authentication and authorization.
+- Admin route protection.
+- Server-side permission checks.
+- API input validation and output encoding.
+- Cross-site scripting (XSS).
+- Cross-site request forgery (CSRF), where applicable.
+- SQL injection and unsafe database queries.
+- Server-side request forgery (SSRF), particularly for configurable remote data sources.
+- Rate limiting and abuse protection.
+- Session cookie security.
+- Password handling and account recovery.
+- CORS policy.
+- Content Security Policy.
+- Security-related HTTP headers.
+- Dependency vulnerabilities.
+- Sensitive information in logs.
+- Secrets accidentally committed to the repository.
+- Publicly exposed environment variables.
+- File upload validation, if uploads exist.
+- Untrusted article content and external HTML.
+- Unprotected administrative APIs.
+- Excessive error details exposed to visitors.
+
+Use parameterized queries or the existing ORM safely. Validate remote URLs and restrict server-side fetches to appropriate protocols and destinations; prevent access to private network and metadata endpoints through arbitrary provider URLs.
+
+Do not put private API keys, database credentials, session secrets, or admin secrets in client-side bundles.
+
+Only expose intentionally public configuration to the frontend.
+
+Protect administrative mutations with authentication, authorization, appropriate CSRF defenses, validation, and audit logging.
+
+Use least-privilege access and avoid creating an unrestricted superuser endpoint.
+
+Configure security headers carefully so they do not silently break legitimate scripts, fonts, images, APIs, or the 3D globe. Test the resulting policy instead of blindly copying an overly restrictive template.
+
+Run the package manager's supported security audit where practical. Distinguish confirmed findings from speculative concerns and explain any unresolved critical or high-severity issues.
+
+Do not claim that the application is completely secure or that a penetration test was performed unless that test actually occurred.
+
+## 12. DATABASE, BACKGROUND JOBS, AND DATA INTEGRITY
+
+Verify that production workflows are reliable.
+
+- Apply and verify database migrations using the existing migration system.
+- Ensure important published content survives process restarts and deployments.
+- Verify that scheduled tasks do not run multiple uncontrolled copies.
+- Handle external API timeouts, retries, rate limits, and provider failures.
+- Use bounded retries and backoff rather than infinite retry loops.
+- Make ingestion and publishing operations idempotent where appropriate.
+- Prevent duplicate articles from uncontrolled repeated ingestion.
+- Distinguish source publication time, ingestion time, and last update time.
+- Record provider freshness and failure states honestly.
+- Prevent stale data from being displayed as live.
+- Validate database indexes and slow queries for high-use pages.
+- Implement suitable retention and cleanup policies without accidentally deleting published articles or important audit records.
+
+For finance and arbitrage features, test the existing calculations using realistic fixtures, including stale quotes, missing order-book depth, fees, slippage, transfer costs, incompatible markets, and unavailable providers.
+
+Fixtures may be used in tests, but they must never masquerade as live production data.
+
+## 13. AUTOMATED TESTING AND REGRESSION COVERAGE
+
+Create or extend the test suite using the project's existing tooling where possible.
+
+At minimum, cover:
+
+### SEO and HTTP
+- Correct page titles and canonical URLs.
+- Appropriate robots directives.
+- Valid sitemap XML.
+- Correct sitemap inclusion and exclusion rules.
+- Valid News sitemap behavior if implemented.
+- Article publication and modification timestamps.
+- Redirect, 404, and 410 behavior where applicable.
+- No accidental indexing of admin or private routes.
+- Structured-data validity and consistency with visible content.
+
+### Application functionality
+- Homepage rendering.
+- News listing and article details.
+- Live timeline versus archive behavior.
+- Market Explorer functionality.
+- Arbitrage calculation integrity.
+- Authentication and admin access restrictions.
+- Provider configuration validation.
+- Error handling when external APIs fail.
+
+### Advertising
+- No production ads on restricted routes.
+- No fake production ad units.
+- Missing AdSense configuration does not crash the application.
+- Ad containers do not create major layout shifts where this can be tested reliably.
+
+### Security
+- Unauthorized users cannot access protected admin endpoints.
+- Public users cannot perform privileged actions.
+- Invalid and malicious input is rejected safely.
+- Secrets do not appear in client bundles or ordinary application responses.
+
+Use real browser-based end-to-end testing if the necessary framework and runtime are available. Otherwise, implement the strongest feasible automated coverage and clearly report what could not be tested.
+
+Do not claim that a test passed merely because the test file exists.
+
+## 14. MOBILE, ACCESSIBILITY, AND BROWSER COMPATIBILITY
+
+Check real rendered pages at mobile, tablet, and desktop widths.
+
+Fix:
+
+- Horizontal overflow.
+- Unusable navigation.
+- Overlapping ad containers.
+- Content hidden behind sticky elements.
+- Broken article layouts.
+- Inaccessible controls.
+- Missing keyboard focus indicators.
+- Poor color contrast.
+- Missing image alternative text where appropriate.
+- Animation behavior that ignores reduced-motion preferences.
+- WebGL failure states.
+- Unstable content loading that shifts important controls.
+
+Maintain the established premium visual identity.
+
+Do not remove important features simply to improve a synthetic score. Prefer targeted optimizations.
+
+## 15. VPS DEPLOYMENT READINESS
+
+Prepare the existing application for a controlled production deployment on the planned VPS, approximately 4 CPU cores and 8 GB RAM.
+
+Avoid unnecessary infrastructure, heavyweight local AI models, or multiple services that do not justify their cost.
+
+Verify or document:
+
+- Production build and startup commands.
+- Runtime and package-manager requirements.
+- Required environment variables.
+- Secure secret injection.
+- Database setup and migration sequence.
+- Persistent storage requirements.
+- Reverse proxy and HTTPS configuration.
+- Process supervision and restart behavior.
+- Background job startup and shutdown.
+- Health and readiness endpoints.
+- Log rotation and storage limits.
+- Database and application backup procedures.
+- A practical restoration procedure.
+- Deployment and rollback steps.
+- Graceful shutdown and recovery after restart.
+
+Never overwrite production data or run destructive migrations without a deliberate, documented migration strategy.
+
+Provide a production environment-variable template with descriptions and safe placeholders. Never put real secrets into the repository, generated documentation, or client-side code.
+
+If deployment credentials or access to the VPS are not available, prepare and test the deployment configuration locally to the extent possible, then provide explicit manual deployment steps. Do not claim that the application has been deployed.
+
+## 16. OBSERVABILITY AND OPERATIONAL READINESS
+
+Make production failures diagnosable.
+
+Provide structured, useful server-side logging without exposing passwords, access tokens, API keys, sensitive personal information, or complete secret-bearing request URLs.
+
+Where practical, expose health information that distinguishes:
+
+- Application process health.
+- Database connectivity.
+- Background job status.
+- Provider connectivity.
+- Last successful ingestion.
+- Data freshness.
+- Configuration problems.
+
+Do not expose sensitive internal diagnostic details to unauthenticated visitors.
+
+Do not report a provider as healthy merely because its configuration exists. Health status must reflect actual checks and their timestamps.
+
+Keep logs and monitoring within the available VPS resource budget.
+
+## 17. SEO AND PRODUCTION READINESS REPORT
+
+After implementation, provide a concise but evidence-based report containing:
+
+1. Repository and architecture findings.
+2. Files and modules materially changed.
+3. Technical SEO features implemented.
+4. Sitemap and robots behavior verified.
+5. Article lifecycle and indexing rules.
+6. Structured-data validation results.
+7. AdSense configuration and policy-readiness findings.
+8. Security findings and unresolved risks.
+9. Build, test, and type-check results.
+10. Performance measurements and testing conditions.
+11. Deployment prerequisites.
+12. Outstanding tasks requiring owner credentials, real configuration, editorial decisions, or external service access.
+
+Assign each unresolved issue a severity:
+
+- P0: release-blocking, such as critical security flaws, data corruption, or a fundamentally broken production build.
+- P1: high-priority issue that materially affects safe launch, indexability, or core functionality.
+- P2: important but non-blocking improvement.
+
+For every important item, state whether it is verified, partially implemented, blocked, or not tested.
+
+Provide exact commands and actual results for build and tests when the environment permits execution.
+
+If a command fails, show the real failure and the corrective action taken or remaining.
+
+Never fabricate test results, Search Console verification, Google indexing, AdSense approval, performance scores, or deployment status.
+
+## 18. DEFINITION OF DONE
 
 This phase is complete only when:
 
-The existing public application remains intact.
+- The existing application builds successfully, or any remaining build blockers are explicitly identified.
+- Core user-facing routes are tested.
+- Public pages have appropriate SEO metadata and canonical behavior.
+- Robots and sitemap endpoints return valid, consistent results.
+- Published news articles follow a deliberate lifecycle and indexing policy.
+- Private and administrative routes are appropriately protected and excluded from indexing.
+- Structured data is valid and based on actual content.
+- AdSense integration is configured honestly and does not violate the intended placement rules.
+- Important security issues have been addressed or explicitly documented.
+- Database persistence, background jobs, and provider failures are handled appropriately.
+- Deployment instructions reflect the actual implementation.
+- The final report distinguishes completed work from assumptions and external dependencies.
 
-The Control Center is protected by real server-side authorization.
+Begin by auditing the existing repository. Then implement the highest-priority fixes, run the available tests, verify the actual results, and deliver the final report.
 
-Administrative APIs enforce permissions independently of the UI.
-
-The overview reflects actual system and dependency health.
-
-Source and provider statuses are based on real configuration and operational results.
-
-Credentials are never exposed in frontend bundles or ordinary diagnostic responses.
-
-Background jobs have observable execution history.
-
-Retries are bounded and permanent failures are handled correctly.
-
-Manual operations require authorization.
-
-Data-quality issues can be inspected.
-
-Health endpoints distinguish process liveness from dependency readiness.
-
-Logs and audit records avoid secret leakage.
-
-Backup and restoration instructions match the actual database.
-
-Deployment instructions match the actual project and runtime.
-
-Optional integrations can remain disabled without breaking the application.
-
-Resource consumption is bounded and appropriate for the target VPS.
-
-AdSense configuration is reported honestly.
-
-Administrative routes are not treated as public monetized content.
-
-Security-relevant tests are included and executed.
-
-Build, lint, type checks, migrations, and tests are run where available.
-
-Missing configuration and unsupported features are explicitly documented.
-
-No fake operational success states remain.
-
-23. Required final report
-
-After implementing this phase, provide:
-
-A brief audit of the actual starting repository.
-
-The architecture that now exists.
-
-Files and components created or modified.
-
-Administrative routes and permissions.
-
-Database models and migrations.
-
-Source and provider integrations actually tested.
-
-Background jobs actually operational.
-
-Health checks and diagnostic capabilities.
-
-Security controls implemented.
-
-Backup and restoration procedure.
-
-VPS deployment procedure.
-
-Required environment variables, with no secret values.
-
-Build, lint, type-check, migration, and test results.
-
-Known limitations and remaining blockers.
-
-Recommended next implementation phase.
-
-Distinguish clearly between implemented, verified, partially implemented, and planned features.
-
-Final priority: secure operation, truthful system status, recoverability, and reliable data processing. A beautiful Control Center that cannot actually manage the system does not satisfy this prompt.
+Do not stop after generating a plan. Perform the work that can be completed within the available repository and runtime.
