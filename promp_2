@@ -1,134 +1,82 @@
-Build a production-grade, local-first, highly specialized security testing engine suite focused exclusively on the four highest-impact vulnerability classes that directly enable either (A) unauthorized wallet/balance credit or (B) unpaid item fulfillment. The target is modern web applications as of October 2026: SPAs, GraphQL/REST hybrids, serverless backends, edge functions, and payment flows involving third-party gateways. The engines must be extremely deep, high-signal, and effective against real-world targets. No superficial scanning. Every detection technique must be state-of-the-art and produce concrete, reproducible evidence tied to observable side-effects (balance change, order status change, new entitlement, download link appearance, etc.).
+Build the complete local-first application shell, orchestration layer, browser management system, session handling, traffic capture pipeline, user interface, and supporting infrastructure that hosts and drives the four core detection engines (Authz Matrix Runner, Payment & Webhook Integrity Harness, Race/Concurrency Engine, and Parameter & Business-Logic Fuzzer). The application must run entirely on the user’s Windows machine. The only action required from the user is to log in once (or a few times for multi-account testing) inside a controlled browser; after that confirmation, everything else is fully automated.
 
-### Strict scope – only these four engines
-1. Access control / API authorization (BOLA, IDOR, BFLA, tenant isolation, object-level and function-level authorization failures)
-2. Payment integration integrity (webhook verification failures, amount/currency mismatch, client-trusted confirmation, replay, confirm-before-capture, signature bypass)
-3. Concurrency, idempotency & replay (race conditions on credit/debit/fulfill/redeem, weak or missing idempotency, double-spend, exactly-once violations)
-4. Input validation & parameter integrity (client-controlled monetary and quantity parameters, missing server-side price re-derivation, type confusion, business-logic parameter abuse)
+### High-level architecture
+- A local web application (preferred stack: Electron + React/Next.js or a clean Node.js + modern frontend) that the user launches on Windows.
+- When a scan is started, the application launches one or more fully isolated, controlled Chromium instances via Playwright (preferred) or an equivalent reliable browser automation library.
+- The controlled browser is the single source of truth for authentication state, cookies, localStorage, sessionStorage, IndexedDB, service workers, and all subsequent network traffic.
+- All traffic originating from the controlled browser is transparently captured, decoded, categorized, and fed to the four engines.
+- The application keeps the controlled browser(s) alive and logged-in for the entire duration of the scan, automatically handling token refresh, cookie updates, and session continuity whenever possible.
+- Clean separation between the UI/orchestrator layer and the four detection engines so the engines can be updated independently.
 
-All other vulnerability classes are out of scope for this module set.
+### Browser & session management (critical – must be rock-solid)
+- “Start Authenticated Browser” button: launches a fresh controlled Chromium window (or headless with optional visible mode), navigates to the user-supplied target URL, and waits.
+- User performs login manually in that window (including any MFA, CAPTCHA, or SSO flow). When finished, the user clicks “I am logged in / Session ready” in the local app.
+- At that moment the application takes a complete, serializable snapshot of the browser context: all cookies (including HttpOnly), localStorage, sessionStorage, IndexedDB (where accessible), service worker registrations, and current Authorization / CSRF headers.
+- The same browser context remains alive and is reused by every engine. If the session expires or a token needs refresh, the application detects it and either refreshes automatically or pauses and notifies the user.
+- Multi-account support: the user can repeat the login process for additional accounts (userA, userB, low-priv, different tenant, etc.). Each account becomes a named, persistent context that the Authz Matrix Runner can use simultaneously.
+- Ability to open additional tabs or navigate to external domains (payment provider pages, callback URLs, etc.) while still capturing all traffic under the same session.
+- Export and import of full browser contexts so sessions can be saved and restored later without re-logging in.
+- Graceful handling of common post-login challenges (WAF, bot detection, geo blocks) with clear user feedback.
+- Clean shutdown: all controlled browsers are closed, ports released, and state saved when the user stops the scan or closes the application.
 
----
+### Traffic capture & analysis pipeline
+- Full interception of HTTP/HTTPS traffic (and WebSockets if relevant) from the controlled browser, including TLS-terminated requests.
+- Real-time decoding of request and response bodies (JSON, form-urlencoded, GraphQL, multipart, etc.).
+- Automatic categorization and tagging of endpoints into high-value groups: wallet/balance/credit/debit, order/cart/checkout, payment/confirm/capture, fulfill/redeem/claim, entitlement/download.
+- Live traffic history viewer (lightweight Burp-style) with powerful filtering, search, highlighting of monetary parameters, and “send to specific engine” actions.
+- Continuous background discovery: as new pages are visited or new API calls appear, endpoints, parameters, and resource IDs are automatically extracted and added to the shared inventory used by all four engines.
+- GraphQL-aware parsing (operations, variables, fragments) and REST-aware parameter extraction.
 
-### 1. Authz Matrix Runner (absolute highest priority – the most powerful and highest-yield engine)
+### Orchestration layer
+- Central coordinator that receives the live traffic stream and the shared resource inventory and intelligently feeds the four engines.
+- Support for sequential, parallel, or selective execution of the engines (user can choose “Run all core engines”, “Authz only”, “Payment + Race”, etc.).
+- Goal-directed mode: the user selects or types a high-level intent such as “Increase my balance without payment” or “Obtain items / fulfill orders without paying”. The orchestrator prioritizes the most relevant engines, endpoints, and parameters accordingly.
+- Shared session and state store so every engine operates on the exact same authenticated context and can read/write before/after snapshots of balances, order statuses, and entitlements.
+- Ability to pause, resume, or stop individual engines without destroying the browser session.
+- Progress tracking and live event stream (new endpoints discovered, tests started, findings raised, errors encountered).
+- Post-scan aggregation: all findings from the four engines are collected, deduplicated where appropriate, grouped by the two protected outcomes (unauthorized balance credit vs unpaid fulfillment), and prepared for reporting.
 
-This engine must systematically discover and test every state-changing endpoint that can affect wallet balance, order status, fulfillment, redemption, or entitlement.
+### User interface (must be simple, clear, and usable by non-experts)
+- Clean modern dashboard showing:
+  - Target URL
+  - Current login / session status for each account
+  - Selected engines and overall progress
+  - Live findings counter with severity breakdown
+  - One-click “Run Core Scan” and individual engine controls
+- Intent selector (dropdown or free-text) that influences prioritization.
+- Real-time findings feed: each finding appears as a card with category, short title, severity, and affected outcome (A or B). Clicking opens a detailed evidence view.
+- Detailed finding page containing:
+  - Full request and response
+  - Before/after state diff (balance, order status, entitlement, etc.)
+  - Exact parameters that were manipulated
+  - Reproduction steps
+  - Raw traffic and timestamps
+  - One-click copy or export
+- Settings panel: concurrency level, request rate limits, which engines to enable, multi-account management, export formats, stealth/aggression options, theme (dark/light).
+- Traffic viewer tab with search, filters, and “send to engine” buttons.
+- Clear status indicators, progress bars, tooltips, and short plain-language explanations so a non-professional user always understands what is happening and what a finding means.
+- Responsive layout, keyboard shortcuts, and non-blocking UI even during high-concurrency races.
 
-**Discovery phase (automatic and continuous)**
-- Passive + active discovery from live browser traffic, JavaScript AST analysis (including webpack/chunked bundles, React/Vue/Angular source maps if present), GraphQL introspection, OpenAPI/Swagger if exposed, and common naming patterns.
-- Identify all endpoints and GraphQL mutations related to: wallet, balance, credit, debit, transfer, top-up, order, cart, checkout, payment, confirm, capture, fulfill, redeem, claim, download, entitlement, license, subscription, points, voucher.
-- Extract every resource identifier: userId, accountId, walletId, orderId, transactionId, itemId, productId, fulfillmentId, redemptionCode, tenantId, organizationId, etc. Support UUID, ULID, sequential integers, base64, hashed, signed, GraphQL global node IDs, and JWT-embedded IDs.
-- Build a live resource inventory per authenticated context.
+### Reporting & evidence
+- Automatic generation of a structured JSON report and a human-readable HTML report at the end of a scan.
+- Every finding includes a complete, self-contained evidence pack sufficient for reproduction and for submission to a bug-bounty program or internal security team.
+- Findings are explicitly mapped to the two outcomes: unauthorized balance/wallet credit (A) or unpaid fulfillment (B).
+- Export options: JSON, HTML, Markdown, and optionally a zip containing the evidence files.
 
-**Multi-context execution**
-- Maintain at least three simultaneous authenticated browser contexts (userA, userB, and optionally a low-privilege or different-tenant account). The user logs each one in once; the engine re-uses the full browser context (cookies, localStorage, sessionStorage, IndexedDB, service workers, Authorization headers).
-- For every discovered object or resource belonging to one account, systematically substitute identifiers from the other accounts and roles.
-- Test both horizontal privilege (same role, different owner) and vertical privilege (lower role accessing higher-privilege functions).
-- Cover direct object references, function-level authorization (can a normal user call an admin-only credit or fulfill endpoint?), and tenant isolation failures.
+### Additional necessary features
+- Local encrypted storage of scan configurations, browser contexts, traffic history, and findings (so sensitive session data is protected at rest).
+- Robust error handling and recovery: if a page structure changes, a token expires, a request is blocked, or an engine crashes, the application recovers or pauses with a clear message instead of failing silently.
+- Rate limiting, polite defaults, and configurable delays so the tool can be used against real targets without immediate IP or account blocking.
+- Logging and optional debug mode for troubleshooting.
+- Windows-first packaging: simple installer or portable executable, minimal external dependencies, clear first-run experience.
+- Modular internal design so the four detection engines remain independently updatable and testable.
+- Support for saving and loading full scan profiles (target + accounts + engine settings + intent).
 
-**Deep testing techniques (2026 level)**
-- Single-parameter and multi-parameter IDOR (swap only orderId, or orderId + userId together).
-- Mass assignment style tests on update endpoints that accept owner or amount fields.
-- Broken function-level authorization on sensitive actions (credit, refund, fulfill, force-complete).
-- GraphQL-specific: node ID swapping, mutation argument injection, batching attacks that mix authorized and unauthorized operations.
-- Multi-step flow authorization: create order as userA → attempt to confirm/fulfill/redeem as userB; or create as userA → pay as userA → fulfill as userB.
-- Side-effect verification: after every request, poll or re-fetch the victim’s wallet balance, order status, entitlement flags, and download links. A finding is only raised when an unauthorized state change actually occurs.
-- Differential response analysis: compare status codes, body length, error messages, presence of sensitive fields, and timing between authorized and unauthorized contexts.
-- Blind IDOR detection via side-channels (balance change, email trigger if observable, inventory decrement, etc.).
+### Quality and usability bar
+- After the user clicks “I am logged in”, the rest of the process must be fully automated and require no further manual request crafting.
+- The UI must remain responsive and informative even while hundreds of concurrent requests are being fired by the race engine.
+- High reliability of session persistence and traffic capture; these are foundational and must not be fragile.
+- Clear separation of concerns: browser management, traffic pipeline, orchestration, UI, and the four engines communicate through well-defined interfaces.
+- Production-ready code quality, proper error boundaries, and clean shutdown behavior.
 
-**Evidence requirements**
-- Full original and mutated request/response pairs.
-- Before/after snapshots of the affected resource (balance, order status, entitlement).
-- Exact parameter(s) that were swapped.
-- Clear reproduction steps that work with the same browser contexts.
-- Severity rationale tied directly to outcome A or B.
-
----
-
-### 2. Payment & Webhook Integrity Harness
-
-This engine targets every path that can turn an unverified or manipulated payment into a balance credit or a fulfilled order.
-
-**Traffic and flow capture**
-- Automatically identify payment initiation, redirect, callback, webhook, confirm, capture, and status-polling endpoints from live traffic and JavaScript.
-- Capture both browser-visible requests and any background webhook-style calls that the application makes or expects.
-- Support modern payment patterns: client-side confirmation flags, server-to-server webhooks, polling, and hybrid flows.
-
-**Tampering and bypass techniques (deep 2026 coverage)**
-- Amount and currency mismatch: modify the amount or currency in the client request, in the webhook body, or in the confirm payload while keeping signatures or other fields intact where possible.
-- Signature and authenticity failures: remove signature, use weak/empty secret, change signed fields, replay with old timestamp, use algorithm confusion if JWT-like tokens are involved.
-- Replay attacks: capture a successful webhook or confirm request and replay it multiple times, with and without idempotency keys.
-- Client-trusted success: detect cases where the frontend sets a “payment successful” flag or redirects to a success page that the backend trusts without re-verifying with the gateway.
-- Confirm-before-capture / fulfill-before-verify: force the application into a state where fulfillment or credit occurs before the payment provider has confirmed capture.
-- Status manipulation: change “pending” → “succeeded”, “failed” → “succeeded”, or inject a successful status for a non-existent or low-value transaction.
-- Race between user confirm and webhook arrival.
-- Parameter pollution and content-type confusion on webhook endpoints.
-
-**Oracle and evidence**
-- Always compare wallet balance and order/fulfillment state before and after the manipulated payment flow.
-- Record the exact point where the application accepted an unverified or mismatched payment.
-- Produce a complete evidence package showing the original legitimate flow versus the manipulated flow and the resulting unauthorized credit or fulfillment.
-
----
-
-### 3. Race / Concurrency & Idempotency Engine
-
-This engine must reliably surface double-credit, double-fulfillment, and exactly-once violations under realistic concurrency.
-
-**Core capabilities**
-- Launch highly concurrent parallel requests (configurable from 10 to several hundred workers) against any credit, debit, confirm, capture, fulfill, redeem, or claim endpoint.
-- Support both identical payloads and deliberately varied payloads (different idempotency keys, missing keys, reused keys, keys that differ only in case or whitespace).
-- Test with and without the application’s claimed idempotency mechanisms.
-- Use both HTTP/1.1 connection reuse and HTTP/2 multiplexing to maximize race windows.
-- Include modern race techniques: request pipelining where possible, simultaneous tab/context races, and timed bursts that align with known processing delays.
-
-**Detection logic**
-- Capture precise before-state (wallet balance, order status, redemption count, inventory).
-- Fire the concurrent requests.
-- Immediately capture after-state and compute the delta.
-- Flag any case where the net effect exceeds the expected single application of the operation (e.g., balance increased by 2× or more, two fulfillments for one payment, negative balance, over-redemption).
-- Detect missing or ineffective unique constraints and locking.
-- Measure and report the timing window that allowed the race.
-
-**Evidence**
-- Exact number of parallel requests, timing diagram or timestamps, before/after state values, and a minimal reproducible script that triggers the same race using the same session.
-
----
-
-### 4. Parameter & Business-Logic Fuzzer (monetary and quantity focused)
-
-This engine performs intelligent, context-aware fuzzing of every parameter that can influence price, quantity, discount, or credit.
-
-**Target parameters (automatically discovered and prioritized)**
-- amount, price, total, subtotal, quantity, qty, currency, discount, coupon, promo, tax, shipping, tip, points, credit, balance, value, cost, fee.
-
-**Fuzzing intelligence**
-- Type confusion: string vs number, negative values, zero, extremely large numbers, scientific notation, Unicode digits, null, arrays, nested objects, boolean true/false.
-- Semantic attacks: lower the price, increase quantity, change currency to a weaker one, apply a forged or expired coupon, set discount > 100%, send client-calculated total that does not match server catalog prices.
-- Sequential and multi-step fuzzing: mutate parameters at cart → checkout → confirm → fulfill stages and observe whether the server re-derives the final amount from trusted sources or trusts the client value.
-- GraphQL variable and mutation argument fuzzing with the same monetary focus.
-- Combination attacks: change quantity and price together, or quantity + coupon.
-
-**Oracle**
-- Only raise findings when the server accepts a client-supplied value that results in a lower payment obligation or higher credit/fulfillment than the legitimate catalog price would allow.
-- Always show the original legitimate calculation versus the accepted mutated calculation and the resulting balance or order state.
-
-**Evidence**
-- Original request, mutated request, server response, and before/after financial or fulfillment state.
-
----
-
-### Cross-cutting requirements for all four engines
-
-- Full browser-context fidelity: every request must carry the exact cookies, localStorage, sessionStorage, Authorization headers, CSRF tokens, and custom headers of the live authenticated session. Token refresh must be handled automatically when possible.
-- Continuous endpoint and parameter discovery that updates as the user navigates or as the engines explore.
-- Goal-directed mode: the user can declare a high-level intent (“increase my balance without paying” or “obtain this item without payment”). The engines must prioritize paths and parameters most likely to achieve that intent.
-- Strict side-effect oracle: a finding is only valid if an actual unauthorized state change is observed (balance increased, order moved to fulfilled/paid, new download link or entitlement appeared, etc.). Purely theoretical issues without observable impact are suppressed.
-- Multi-step flow modeling: the engines understand and can operate across the full lifecycle (add to cart → checkout → pay → confirm → fulfill → redeem).
-- High-quality evidence packs for every finding: full HTTP request/response, state diffs, timestamps, reproduction steps, and a short explanation of why it enables outcome A or B.
-- Configurable aggression, rate limiting, and concurrency so the tool remains usable against real targets without immediate blocking.
-- Structured JSON output + human-readable report for every finding.
-- Modular design so each engine can be developed, tested, and improved independently.
-- Technology foundation: Playwright (preferred) or equivalent for browser control, a high-performance concurrent HTTP client that re-uses the browser’s session, modern TypeScript/Node stack, clean separation of discovery, execution, oracle, and reporting layers.
-
-Deliver a complete, deeply implemented, production-ready set of these four engines. Prioritize detection depth, real-world effectiveness against 2026 application patterns, low false-positive rate through side-effect verification, and rich, actionable evidence over any other concern. The engines must work solely from the authenticated browser context the user provides; no external credentials, server access, or privileged information beyond the logged-in session is assumed or required.
+Deliver a complete, polished, production-ready local application that seamlessly turns a single (or few) manual login action into deep, automated, high-signal testing of the four critical vulnerability classes. Everything required for controlled browser lifecycle, persistent multi-account sessions, full traffic capture, intelligent orchestration, easy-to-use interface, evidence collection, and reporting must be included and robust. The application exists solely to host and empower the four core engines; its design must make those engines as effective and easy to run as possible for a non-expert user on Windows.
