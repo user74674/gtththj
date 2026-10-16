@@ -1,0 +1,281 @@
+18. AdSense operations and policy readiness
+
+AdSense is a primary monetization objective.
+
+Add an operational configuration view for the existing ad integration.
+
+Show:
+
+Whether a publisher ID is configured.
+
+Whether ad components are enabled.
+
+Which placements are active.
+
+Which placements are development-only.
+
+Whether required policy and privacy pages exist.
+
+Whether an ads.txt file is present where applicable.
+
+Any missing configuration that can be detected safely.
+
+Do not claim that the website is approved by Google or that ads are serving unless this has actually been verified.
+
+Do not claim that an ads.txt entry is valid simply because a file exists.
+
+The publisher ID must come from real owner configuration.
+
+Ensure the Control Center itself does not become a public ad-filled page. Administrative routes should be appropriately protected and excluded from indexing.
+
+Review whether technical metadata, canonical URLs, robots directives, sitemap generation, and public policy pages remain consistent with the current application.
+
+Do not place AdSense ads on administrative pages, error pages, or pages with little substantive public content merely to maximize placements.
+
+19. Performance and resource protection
+
+The system must operate reliably on the target VPS.
+
+Use bounded resource consumption across all background work.
+
+Requirements:
+
+Limit concurrent ingestion jobs.
+
+Prevent duplicate scheduled work.
+
+Limit active market-data subscriptions.
+
+Use provider-aware polling.
+
+Reuse existing connections where appropriate.
+
+Avoid unbounded queues.
+
+Limit response sizes.
+
+Paginate logs and execution history.
+
+Avoid rendering huge operational tables at once.
+
+Apply retention and log rotation.
+
+Use database indexes for frequent queries.
+
+Use caching where beneficial.
+
+Shut down cleanly on termination signals.
+
+Avoid synchronous expensive operations in request handlers.
+
+Ensure optional AI workloads cannot starve essential ingestion or user-facing API requests.
+
+If resource monitoring is unavailable, state that limitation rather than displaying invented CPU or memory values.
+
+Do not create a system that assumes every exchange, news source, AI provider, and external alerting integration is active simultaneously.
+
+20. Testing requirements
+
+Add tests appropriate to the existing stack.
+
+At minimum, validate:
+
+Authentication and authorization
+
+Anonymous users cannot access administrative routes.
+
+Anonymous users cannot call administrative APIs.
+
+Operators cannot perform actions beyond their permissions.
+
+Sensitive settings are never returned in full.
+
+Invalid or expired sessions are handled safely.
+
+Source and provider management
+
+Invalid configuration is rejected.
+
+Disabled sources do not run.
+
+Connection-test failures are recorded.
+
+Rate limits are handled.
+
+Credentials are not logged.
+
+Unsafe source URLs are rejected.
+
+Missing credentials do not create false connected states.
+
+Scheduler and jobs
+
+Jobs do not overlap when overlap is prohibited.
+
+Failed jobs receive bounded retries.
+
+Permanent failures do not retry forever.
+
+Manual execution requires authorization.
+
+Shutdown does not leave uncontrolled background work.
+
+Execution history is persisted correctly.
+
+Data quality and persistence
+
+Invalid records are flagged appropriately.
+
+Duplicate processing does not create duplicate records.
+
+Retention jobs obey the configured policy.
+
+Migrations can be applied on a test database.
+
+Backup verification does not modify production data.
+
+Deployment and operational behavior
+
+Health endpoints report the correct state.
+
+Required configuration is validated.
+
+Optional integrations can remain disabled.
+
+Public responses do not expose internal stack traces.
+
+Logs do not contain secrets.
+
+The application starts without an AI key when AI is optional.
+
+Run the actual build, type checks, lint checks, tests, and migration checks available in the repository.
+
+Record the results. Do not claim success without running the commands.
+
+21. Implementation sequence
+
+Work in the following order.
+
+Stage 1 — Repository audit
+
+Document the actual stack, current features, integrations, and gaps.
+
+Stage 2 — Operational data model
+
+Create only the required database models, migrations, and service interfaces.
+
+Stage 3 — Protected Control Center
+
+Build authenticated routes, authorization, overview, and module navigation.
+
+Stage 4 — Connector management
+
+Integrate real source and provider health, configuration validation, safe testing, and diagnostics.
+
+Stage 5 — Background jobs
+
+Implement or repair scheduling, execution tracking, bounded retries, and manual operations.
+
+Stage 6 — Data quality and observability
+
+Implement health checks, operational logs, quality findings, alerts, and audit history.
+
+Stage 7 — Backup and deployment
+
+Prepare environment templates, startup configuration, process supervision, reverse proxy guidance, backup and restore instructions.
+
+Stage 8 — Security review
+
+Review authorization, secret handling, SSRF exposure, unsafe content, logs, public endpoints, and administrative operations.
+
+Stage 9 — Validation
+
+Run tests and production build checks. Fix implementation-caused failures and document remaining blockers.
+
+Do not implement every stage as a mockup and then declare the system complete. Prioritize the smallest complete operational path and expand it incrementally.
+
+22. Acceptance criteria
+
+This phase is complete only when:
+
+The existing public application remains intact.
+
+The Control Center is protected by real server-side authorization.
+
+Administrative APIs enforce permissions independently of the UI.
+
+The overview reflects actual system and dependency health.
+
+Source and provider statuses are based on real configuration and operational results.
+
+Credentials are never exposed in frontend bundles or ordinary diagnostic responses.
+
+Background jobs have observable execution history.
+
+Retries are bounded and permanent failures are handled correctly.
+
+Manual operations require authorization.
+
+Data-quality issues can be inspected.
+
+Health endpoints distinguish process liveness from dependency readiness.
+
+Logs and audit records avoid secret leakage.
+
+Backup and restoration instructions match the actual database.
+
+Deployment instructions match the actual project and runtime.
+
+Optional integrations can remain disabled without breaking the application.
+
+Resource consumption is bounded and appropriate for the target VPS.
+
+AdSense configuration is reported honestly.
+
+Administrative routes are not treated as public monetized content.
+
+Security-relevant tests are included and executed.
+
+Build, lint, type checks, migrations, and tests are run where available.
+
+Missing configuration and unsupported features are explicitly documented.
+
+No fake operational success states remain.
+
+23. Required final report
+
+After implementing this phase, provide:
+
+A brief audit of the actual starting repository.
+
+The architecture that now exists.
+
+Files and components created or modified.
+
+Administrative routes and permissions.
+
+Database models and migrations.
+
+Source and provider integrations actually tested.
+
+Background jobs actually operational.
+
+Health checks and diagnostic capabilities.
+
+Security controls implemented.
+
+Backup and restoration procedure.
+
+VPS deployment procedure.
+
+Required environment variables, with no secret values.
+
+Build, lint, type-check, migration, and test results.
+
+Known limitations and remaining blockers.
+
+Recommended next implementation phase.
+
+Distinguish clearly between implemented, verified, partially implemented, and planned features.
+
+Final priority: secure operation, truthful system status, recoverability, and reliable data processing. A beautiful Control Center that cannot actually manage the system does not satisfy this prompt.
